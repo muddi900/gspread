@@ -13,7 +13,6 @@ from .conftest import I18N_STR, GspreadTest
 
 
 class WorksheetTest(GspreadTest):
-
     """Test for gspread.Worksheet."""
 
     @pytest.fixture(scope="function", autouse=True)
@@ -1836,3 +1835,19 @@ class WorksheetTest(GspreadTest):
 
         # get_all_values should be a carbon copy of get_values
         self.assertEqual(sig_get_values, sig_get_all_values)
+
+    @pytest.mark.vcr()
+    def test_add_validation(self):
+        sheet = self.sheet
+        self.assertDictEqual(
+            sheet.add_validation(
+                "A1",
+                utils.ValidationConditionType.one_of_list,
+                "y",
+                "n",
+                strict=True,
+            ),
+            {"spreadsheetId": self.spreadsheet.id, "replies": [{}]},
+        )
+
+        self.assertRaises(APIError, sheet.update, values="X", range_name="A1")
